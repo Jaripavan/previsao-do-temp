@@ -1,0 +1,203 @@
+<html><head><base href="https://cdnjs.cloudflare.com/"><meta charset="UTF-8"><title>Demon Slayer Weather</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap');
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Noto Sans JP', sans-serif;
+    background: #1a1a1a;
+    color: #fff;
+    background-image: url('https://wallpaperaccess.com/full/2670981.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 15px;
+    backdrop-filter: blur(5px);
+  }
+
+  .weather-card {
+    border: 2px solid #ff5722;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .breathing-effect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #ff5722, #ff9800);
+    opacity: 0.1;
+    animation: breathing 3s ease-in-out infinite;
+  }
+
+  @keyframes breathing {
+    0% { opacity: 0.1; }
+    50% { opacity: 0.2; }
+    100% { opacity: 0.1; }
+  }
+
+  .weather-icon {
+    width: 100px;
+    height: 100px;
+    margin: 10px auto;
+  }
+
+  .temperature {
+    font-size: 3em;
+    font-weight: bold;
+    color: #ff5722;
+  }
+
+  .location {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    color: #ff9800;
+  }
+
+  .hashira-quote {
+    font-style: italic;
+    color: #ffd700;
+    margin: 20px 0;
+  }
+
+  .breathing-type {
+    font-weight: bold;
+    color: #ff5722;
+  }
+
+  #searchBox {
+    width: 100%;
+    padding: 10px;
+    margin: 20px 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #ff5722;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 1.1em;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🗡️ Demon Slayer Weather Report 🌤️</h1>
+  <input type="text" id="searchBox" placeholder="Digite sua cidade...">
+  
+  <div class="weather-card">
+    <div class="breathing-effect"></div>
+    <div class="location">Carregando localização...</div>
+    <div class="weather-icon">
+      <svg viewBox="0 0 100 100" width="100" height="100">
+        <circle cx="50" cy="50" r="40" fill="#ff5722"/>
+        <path d="M50 10 L50 90 M10 50 L90 50" stroke="#fff" stroke-width="3"/>
+      </svg>
+    </div>
+    <div class="temperature">--°C</div>
+    <div class="breathing-type">Respiração do Sol</div>
+    <div class="hashira-quote">"Como o Sol que brilha no céu, mantenha sua determinação ardente!"</div>
+  </div>
+</div>
+
+<script>
+const API_KEY = '4d8fb5b93d4af21d66a2948710284366'; // OpenWeather API key
+
+document.getElementById('searchBox').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        getWeather(this.value);
+    }
+});
+
+async function getWeather(city) {
+    try {
+        const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`);
+        const data = await response.json();
+        
+        updateWeatherCard(data);
+    } catch (error) {
+        console.error('Erro ao buscar clima:', error);
+    }
+}
+
+function updateWeatherCard(data) {
+    const temp = Math.round(data.main.temp);
+    const location = document.querySelector('.location');
+    const temperature = document.querySelector('.temperature');
+    const breathingType = document.querySelector('.breathing-type');
+    const quote = document.querySelector('.hashira-quote');
+    
+    location.textContent = `${data.name}, ${data.sys.country}`;
+    temperature.textContent = `${temp}°C`;
+    
+    // Define respiração e citação baseado na temperatura
+    if (temp > 30) {
+        breathingType.textContent = "Respiração do Sol ☀️";
+        quote.textContent = "Como as chamas do Sol, seu espírito queima intensamente!";
+    } else if (temp > 20) {
+        breathingType.textContent = "Respiração do Trovão ⚡";
+        quote.textContent = "Veloz como um relâmpago, forte como um trovão!";
+    } else if (temp > 10) {
+        breathingType.textContent = "Respiração da Água 💧";
+        quote.textContent = "Flua como a água, adapte-se a qualquer situação.";
+    } else {
+        breathingType.textContent = "Respiração do Gelo ❄️";
+        quote.textContent = "Mantenha a calma e a precisão mesmo no frio mais intenso.";
+    }
+    
+    updateWeatherIcon(data.weather[0].main);
+}
+
+function updateWeatherIcon(weatherType) {
+    const iconContainer = document.querySelector('.weather-icon');
+    let iconSVG = '';
+    
+    switch(weatherType.toLowerCase()) {
+        case 'clear':
+            iconSVG = `<svg viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="25" fill="#ff5722"/>
+                <g stroke="#ff5722" stroke-width="3">
+                    <line x1="50" y1="10" x2="50" y2="25"/>
+                    <line x1="50" y1="75" x2="50" y2="90"/>
+                    <line x1="10" y1="50" x2="25" y2="50"/>
+                    <line x1="75" y1="50" x2="90" y2="50"/>
+                </g>
+            </svg>`;
+            break;
+        case 'clouds':
+            iconSVG = `<svg viewBox="0 0 100 100">
+                <path d="M25,60 Q40,45 60,60 T90,60 Q90,75 75,75 H35 Q20,75 25,60" fill="#666"/>
+            </svg>`;
+            break;
+        case 'rain':
+            iconSVG = `<svg viewBox="0 0 100 100">
+                <path d="M25,50 Q40,35 60,50 T90,50 Q90,65 75,65 H35 Q20,65 25,50" fill="#666"/>
+                <line x1="40" y1="70" x2="35" y2="85" stroke="#4444ff" stroke-width="3"/>
+                <line x1="60" y1="70" x2="55" y2="85" stroke="#4444ff" stroke-width="3"/>
+            </svg>`;
+            break;
+        default:
+            iconSVG = `<svg viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" fill="#ff5722"/>
+            </svg>`;
+    }
+    
+    iconContainer.innerHTML = iconSVG;
+}
+
+// Inicializar com uma cidade padrão
+getWeather('Tokyo');
+</script>
+</body>
+</html>
